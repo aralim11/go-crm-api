@@ -7,11 +7,8 @@ import (
 
 	"github.com/aralim11/go-crm-api/config"
 	"github.com/aralim11/go-crm-api/infra/db"
+	"github.com/aralim11/go-crm-api/internal/user"
 )
-
-func Home(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Welcome Home")
-}
 
 func main() {
 	// load config
@@ -26,9 +23,14 @@ func main() {
 		log.Fatal("Database Connection Error!!")
 	}
 
+	// handlers
+	userRepository := user.NewUserRepo(db)
+	userService := user.NewUserService(userRepository)
+	userHandler := user.NewUserHandler(userService)
+
 	// router
 	router := http.NewServeMux()
-	router.Handle("/", http.HandlerFunc(Home))
+	router.Handle("/users", http.HandlerFunc(userHandler.CreateData))
 
 	// start servers
 	server := &http.Server{
