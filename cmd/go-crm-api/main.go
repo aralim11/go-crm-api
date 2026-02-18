@@ -30,7 +30,7 @@ func main() {
 
 	// router
 	router := http.NewServeMux()
-	router.Handle("/users", http.HandlerFunc(userHandler.CreateData))
+	user.RegisterRoutes(router, userHandler)
 
 	// start servers
 	server := &http.Server{
