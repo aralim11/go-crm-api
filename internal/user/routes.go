@@ -1,7 +1,16 @@
 package user
 
-import "net/http"
+import (
+	"net/http"
 
-func RegisterRoutes(router *http.ServeMux, handler *Handler) {
-	router.Handle("/users", http.HandlerFunc(handler.CreateData))
+	"github.com/jmoiron/sqlx"
+)
+
+func RegisterModule(router *http.ServeMux, db *sqlx.DB) {
+	// handlers
+	userRepository := NewUserRepo(db)
+	userService := NewUserService(userRepository)
+	userHandler := NewUserHandler(userService)
+
+	router.Handle("/users", http.HandlerFunc(userHandler.CreateData))
 }
