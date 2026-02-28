@@ -12,5 +12,5 @@ func RegisterModule(router *http.ServeMux, db *sqlx.DB) {
 	userService := NewUserService(userRepository)
 	userHandler := NewUserHandler(userService)
 
-	router.Handle("/users", http.HandlerFunc(userHandler.CreateData))
+	router.Handle("/api/users", http.HandlerFunc(userHandler.CreateData))
 }

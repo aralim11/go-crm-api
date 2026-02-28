@@ -14,7 +14,10 @@ func NewUserHandler(service UserService) *Handler {
 }
 
 func (h *Handler) CreateData(w http.ResponseWriter, r *http.Request) {
+	// check method
+	if r.Method != http.MethodPost {
 
+	}
 	// decode JSON
 	// validate
 	// hash password
