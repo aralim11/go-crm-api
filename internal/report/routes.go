@@ -11,6 +11,6 @@ func RegisterModule(router *http.ServeMux, db *sqlx.DB) {
 	reportService := NewReportService(reportRepository)
 	reportHandler := NewReportHandler(reportService)
 
-	router.Handle("/api/search", http.HandlerFunc(reportHandler.SearchData))
+	router.Handle("/api/search", http.HandlerFunc(reportHandler.Search))
 
 }

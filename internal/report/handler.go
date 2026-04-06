@@ -15,7 +15,7 @@ func NewReportHandler(service ReportService) *Handler {
 	return &Handler{service: service}
 }
 
-func (h *Handler) SearchData(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Search(w http.ResponseWriter, r *http.Request) {
 	// check method
 	if r.Method != http.MethodPost {
 		response.JsonResponse(w, http.StatusMethodNotAllowed, "Method not allowed!!", nil)
@@ -34,9 +34,9 @@ func (h *Handler) SearchData(w http.ResponseWriter, r *http.Request) {
 	// hash password
 	// check email exists
 	// search from DB
-	result := h.service.SearchData()
+	result, err := h.service.SearchData(req.Barcode, req.ExpiryDate)
 	if err != nil {
-		response.JsonResponse(w, http.StatusInternalServerError, "Failed to search data", nil)
+		response.JsonResponse(w, http.StatusInternalServerError, err.Error(), nil)
 		return
 	}
 

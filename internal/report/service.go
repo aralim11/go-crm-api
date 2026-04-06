@@ -1,7 +1,7 @@
 package report
 
 type ReportService interface {
-	Search(barcode string, expiryDate string) error
+	SearchData(barcode string, expiryDate string) (*Product, error)
 }
 
 type reportService struct {
@@ -12,9 +12,11 @@ func NewReportService(repo ReportRepository) ReportService {
 	return &reportService{repo: repo}
 }
 
-func (s *reportService) Search(barcode string, expiryDate string) error {
-	result, _ := s.repo.SearchData()
-	if  {
-		
+func (s *reportService) SearchData(barcode string, expiryDate string) (*Product, error) {
+	result, err := s.repo.SearchData(barcode, expiryDate)
+	if err != nil {
+		return nil, err
 	}
+
+	return result, nil
 }
