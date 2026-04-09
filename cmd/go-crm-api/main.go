@@ -18,14 +18,20 @@ func main() {
 	}
 
 	// DB connection
-	db, err := db.NewConnection(cnf.Database)
+	dbConn, err := db.NewConnection(cnf.Database)
 	if err != nil {
 		log.Fatal("Database Connection Error!!")
 	}
 
+	// DB migration
+	err = db.MigrateDB(dbConn.DB, "file://infra/migrations", db.GetConnectionString(cnf.Database))
+	if err != nil {
+		log.Fatal("Database Migration Error!!")
+	}
+
 	// router
 	mux := http.NewServeMux()
-	router.RegisterModules(mux, db)
+	router.RegisterModules(mux, dbConn)
 
 	// start servers
 	server := &http.Server{
