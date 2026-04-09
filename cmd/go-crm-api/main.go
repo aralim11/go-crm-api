@@ -24,9 +24,9 @@ func main() {
 	}
 
 	// DB migration
-	err = db.MigrateDB(dbConn.DB, "file://infra/migrations", db.GetConnectionString(cnf.Database))
+	err = db.MigrateDB(dbConn.DB, "./infra/migrations")
 	if err != nil {
-		log.Fatal("Database Migration Error!!")
+		log.Fatal("Database Migration Error!!", err)
 	}
 
 	// router
