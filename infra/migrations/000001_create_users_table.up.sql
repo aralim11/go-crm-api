@@ -1,6 +1,12 @@
+-- +migrate Up
+
 CREATE TABLE users (
-    id SERIAL PRIMARY KEY,
-    name TEXT,
-    email TEXT,
-    address TEXT
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(150) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    mobile VARCHAR(20) UNIQUE NOT NULL,
+    address TEXT NULL,
+    status TINYINT DEFAULT 1, -- 1: active, 0: inactive
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );

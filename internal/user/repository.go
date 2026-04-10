@@ -1,14 +1,11 @@
 package user
 
 import (
-	"fmt"
-
 	"github.com/jmoiron/sqlx"
 )
 
 type UserRepository interface {
-	Create(user *User) error
-	FindAll() error
+	Create(user *User) (*User, error)
 }
 
 type userRepo struct {
@@ -19,11 +16,29 @@ func NewUserRepo(db *sqlx.DB) UserRepository {
 	return &userRepo{db: db}
 }
 
-func (r *userRepo) Create(user *User) error {
-	fmt.Println("User Repository", user)
-	return nil
-}
+func (r *userRepo) Create(user *User) (*User, error) {
+	result, err := r.db.Exec(`
+		INSERT INTO users (name, email, mobile, address, status)
+		VALUES (?, ?, ?, ?, ?)
+	`,
+		user.Name,
+		user.Email,
+		user.Mobile,
+		user.Address,
+		user.Status,
+	)
 
-func (r *userRepo) FindAll() error {
-	return nil
+	// 🔥 check for error
+	if err != nil {
+		return nil, err
+	}
+
+	// 🔥 get auto increment ID
+	id, err := result.LastInsertId()
+	if err != nil {
+		return nil, err
+	}
+
+	user.ID = id
+	return user, nil
 }

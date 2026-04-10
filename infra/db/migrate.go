@@ -4,32 +4,26 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/mysql"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
+	migrate "github.com/rubenv/sql-migrate"
 )
 
-func MigrateDB(dbConn *sql.DB, dir string, dbString string) error {
-	driver, err := mysql.WithInstance(dbConn, &mysql.Config{
-		DatabaseName: dbString,
-	})
+func MigrateDB(dbConn *sql.DB, dir string) error {
+	migrations := &migrate.FileMigrationSource{
+		Dir: dir,
+	}
+
+	// Step 1: DOWN (rollback all)
+	_, err := migrate.Exec(dbConn, "mysql", migrations, migrate.Down)
 	if err != nil {
-		return err
+		return fmt.Errorf("Down migration failed: %w", err)
 	}
 
-	migrator, err := migrate.NewWithDatabaseInstance(
-		dir,
-		"mysql",
-		driver,
-	)
+	// Step 2: UP (apply fresh)
+	number, err := migrate.Exec(dbConn, "mysql", migrations, migrate.Up)
 	if err != nil {
-		return err
+		return fmt.Errorf("Up migration failed: %w", err)
 	}
 
-	if err := migrator.Up(); err != nil && err.Error() != "no change" {
-		return err
-	}
-
-	fmt.Println("Database migration completed successfully.")
+	fmt.Printf("DB migration completed. %d migrations applied.\n", number)
 	return nil
 }
