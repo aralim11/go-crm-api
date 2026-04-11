@@ -2,6 +2,7 @@ package user
 
 type UserService interface {
 	Create(req CreateUserRequest) (*User, error)
+	List() ([]*User, error)
 }
 
 type userService struct {
@@ -13,6 +14,7 @@ func NewUserService(repo UserRepository) UserService {
 }
 
 func (s *userService) Create(req CreateUserRequest) (*User, error) {
+
 	user := &User{
 		Name:    req.Name,
 		Email:   req.Email,
@@ -27,4 +29,16 @@ func (s *userService) Create(req CreateUserRequest) (*User, error) {
 	}
 
 	return user, nil
+}
+
+/**
+ * List users
+ */
+func (s *userService) List() ([]*User, error) {
+	users, err := s.repo.List()
+	if err != nil {
+		return nil, err
+	}
+
+	return users, nil
 }

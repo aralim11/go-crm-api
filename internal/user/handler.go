@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/aralim11/go-crm-api/internal/utils/response"
+	"github.com/aralim11/go-crm-api/internal/utils/validator"
 )
 
 type Handler struct {
@@ -30,6 +31,12 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// validate request
+	if validator.IsBlank(req.Name) {
+		response.JsonResponse(w, http.StatusBadRequest, "Name is required", nil)
+		return
+	}
+
 	// create user
 	user, err := h.service.Create(req)
 	if err != nil {
@@ -39,4 +46,28 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	// respond with created user
 	response.JsonResponse(w, http.StatusCreated, "User created successfully", user)
+}
+
+func (h *Handler) GetUsers(w http.ResponseWriter, r *http.Request) {
+	// check method
+	if r.Method != http.MethodGet {
+		response.JsonResponse(w, http.StatusMethodNotAllowed, "Method not allowed!!", nil)
+		return
+	}
+
+	// get users
+	users, err := h.service.List()
+	if err != nil {
+		response.JsonResponse(w, http.StatusInternalServerError, "Failed to fetch users", err.Error())
+		return
+	}
+
+	// respond with no users found if empty
+	if len(users) == 0 {
+		response.JsonResponse(w, http.StatusOK, "No users found", nil)
+		return
+	}
+
+	// respond with users
+	response.JsonResponse(w, http.StatusOK, "Users fetched successfully", users)
 }

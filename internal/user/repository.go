@@ -6,6 +6,7 @@ import (
 
 type UserRepository interface {
 	Create(user *User) (*User, error)
+	List() ([]*User, error)
 }
 
 type userRepo struct {
@@ -41,4 +42,15 @@ func (r *userRepo) Create(user *User) (*User, error) {
 
 	user.ID = id
 	return user, nil
+}
+
+func (r *userRepo) List() ([]*User, error) {
+	var users []*User
+	
+	err := r.db.Select(&users, "SELECT id, name, email, mobile, address, status FROM users")
+	if err != nil {
+		return nil, err
+	}
+
+	return users, nil
 }
