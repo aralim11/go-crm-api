@@ -37,10 +37,20 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if validator.IsBlank(req.Email) {
+		response.JsonResponse(w, http.StatusBadRequest, "Email is required", nil)
+		return
+	}
+
+	if validator.IsBlank(req.Mobile) {
+		response.JsonResponse(w, http.StatusBadRequest, "Mobile is required", nil)
+		return
+	}
+
 	// create user
 	user, err := h.service.Create(req)
 	if err != nil {
-		response.JsonResponse(w, http.StatusInternalServerError, "Failed to create user", err.Error())
+		response.JsonResponse(w, http.StatusInternalServerError, err.Error(), err)
 		return
 	}
 

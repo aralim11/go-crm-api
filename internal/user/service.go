@@ -1,5 +1,7 @@
 package user
 
+import "fmt"
+
 type UserService interface {
 	Create(req CreateUserRequest) (*User, error)
 	List() ([]*User, error)
@@ -13,8 +15,21 @@ func NewUserService(repo UserRepository) UserService {
 	return &userService{repo: repo}
 }
 
+/**
+ * Create a new user
+ */
 func (s *userService) Create(req CreateUserRequest) (*User, error) {
+	// check if email already exists
+	existingUser, err := s.repo.FindByEmail(req.Email)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check existing user: %w", err)
+	}
 
+	if existingUser != nil {
+		return nil, fmt.Errorf("email already exists")
+	}
+
+	// create user object
 	user := &User{
 		Name:    req.Name,
 		Email:   req.Email,
@@ -23,7 +38,7 @@ func (s *userService) Create(req CreateUserRequest) (*User, error) {
 		Status:  1,
 	}
 
-	user, err := s.repo.Create(user)
+	user, err = s.repo.Create(user)
 	if err != nil {
 		return nil, err
 	}

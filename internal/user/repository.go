@@ -1,12 +1,15 @@
 package user
 
 import (
+	"database/sql"
+
 	"github.com/jmoiron/sqlx"
 )
 
 type UserRepository interface {
 	Create(user *User) (*User, error)
 	List() ([]*User, error)
+	FindByEmail(email string) (*User, error)
 }
 
 type userRepo struct {
@@ -46,11 +49,24 @@ func (r *userRepo) Create(user *User) (*User, error) {
 
 func (r *userRepo) List() ([]*User, error) {
 	var users []*User
-	
+
 	err := r.db.Select(&users, "SELECT id, name, email, mobile, address, status FROM users")
 	if err != nil {
 		return nil, err
 	}
 
 	return users, nil
+}
+
+func (r *userRepo) FindByEmail(email string) (*User, error) {
+	var user User
+	err := r.db.Get(&user, "SELECT id, name, email, mobile, address, status FROM users WHERE email = ?", email)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+
+		return nil, err
+	}
+	return &user, nil
 }
