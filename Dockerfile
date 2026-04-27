@@ -1,13 +1,17 @@
-FROM golang:1.25.4-alpine
+FROM golang:1.25-alpine
 
-WORKDIR /var/www/html
-COPY go.mod ./
-RUN go mod download
+WORKDIR /app
+
+RUN apk add --no-cache git
+
+COPY go.mod go.sum ./
+RUN go mod tidy
 
 COPY . .
 
-RUN go build -o main ./cmd/go-crm-api
+# install air (optional for dev)
+RUN go install github.com/air-verse/air@latest
 
-EXPOSE 8080
+EXPOSE 8082
 
-CMD ["go", "run", "./cmd/go-crm-api/main.go"]
+CMD ["air"]

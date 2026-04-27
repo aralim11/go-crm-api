@@ -105,16 +105,23 @@ func (h *Handler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// convert user ID to int64
 	idInt, err := validator.StrToInt64(id)
 	if err != nil {
 		response.JsonResponse(w, http.StatusBadRequest, "Invalid user ID", nil)
 		return
 	}
 
-	//
+	// get user by ID
 	user, err := h.service.GetUserByID(idInt)
 	if err != nil {
 		response.JsonResponse(w, http.StatusInternalServerError, "Failed to fetch user", err.Error())
+		return
+	}
+
+	// respond with no users found if empty
+	if user == nil {
+		response.JsonResponse(w, http.StatusOK, "No user found", nil)
 		return
 	}
 

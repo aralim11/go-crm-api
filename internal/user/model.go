@@ -3,14 +3,14 @@ package user
 import "time"
 
 type User struct {
-	ID        int64     `db:"id" json:"id"`
-	Name      string    `db:"name" json:"name"`
-	Email     string    `db:"email" json:"email"`
-	Mobile    string    `db:"mobile" json:"mobile"`
-	Address   *string   `db:"address" json:"address"`
-	Status    int8      `db:"status" json:"status"`
-	CreatedAt time.Time `db:"created_at" json:"created_at"`
-	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
+	ID        int64     `db:"id"`
+	Name      string    `db:"name"`
+	Email     string    `db:"email"`
+	Mobile    string    `db:"mobile"`
+	Address   *string   `db:"address"`
+	Status    int8      `db:"status"`
+	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt time.Time `db:"updated_at"`
 }
 
 type CreateUserRequest struct {
@@ -18,4 +18,11 @@ type CreateUserRequest struct {
 	Email   string `json:"email"`
 	Mobile  string `json:"mobile"`
 	Address string `json:"address"`
+}
+
+type UserResponse struct {
+	ID     int    `json:"id"`
+	Name   string `json:"name"`
+	Email  string `json:"email"`
+	Mobile string `json:"mobile"`
 }

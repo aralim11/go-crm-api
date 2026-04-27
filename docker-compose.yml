@@ -3,29 +3,11 @@ version: "3.9"
 services:
   app:
     build: .
-    container_name: go_app
+    container_name: go-app
     ports:
-      - "8080:8080"
-    depends_on:
-      - mysql
-    environment:
-      DB_HOST: mysql
-      DB_USER: root
-      DB_PASSWORD: ""
-      DB_NAME: naafco_crm_db_ihelp_2026
-    restart: always
-
-  mysql:
-    image: mysql:8.0
-    container_name: mysql_db
-    restart: always
-    environment:
-      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
-      MYSQL_DATABASE: naafco_crm_db_ihelp_2026   # ✅ fixed indentation
-    ports:
-      - "3306:3306"
+      - "8082:8082"
+    env_file:
+      - .env
     volumes:
-      - mysql_data:/var/lib/mysql
-
-volumes:
-  mysql_data:
+      - .:/app   # for development (auto reflect changes)
+    restart: unless-stopped
