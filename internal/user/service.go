@@ -5,6 +5,7 @@ import "fmt"
 type UserService interface {
 	Create(req CreateUserRequest) (*User, error)
 	List() ([]*User, error)
+	GetUserByID(id int64) (*User, error)
 }
 
 type userService struct {
@@ -56,4 +57,12 @@ func (s *userService) List() ([]*User, error) {
 	}
 
 	return users, nil
+}
+
+func (s *userService) GetUserByID(id int64) (*User, error) {
+	user, err := s.repo.GetUserByID(id)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }

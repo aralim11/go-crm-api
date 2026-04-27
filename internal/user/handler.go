@@ -3,6 +3,7 @@ package user
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/aralim11/go-crm-api/internal/utils/response"
 	"github.com/aralim11/go-crm-api/internal/utils/validator"
@@ -80,4 +81,43 @@ func (h *Handler) GetUsers(w http.ResponseWriter, r *http.Request) {
 
 	// respond with users
 	response.JsonResponse(w, http.StatusOK, "Users fetched successfully", users)
+}
+
+func (h *Handler) GetUserByID(w http.ResponseWriter, r *http.Request) {
+	// check method
+	if r.Method != http.MethodGet {
+		response.JsonResponse(w, http.StatusMethodNotAllowed, "Method not allowed!!", nil)
+		return
+	}
+
+	// extract user ID from URL
+	path := r.URL.Path
+	parts := strings.Split(path, "/")
+	if len(parts) != 4 {
+		response.JsonResponse(w, http.StatusBadRequest, "Invalid URL format", nil)
+		return
+	}
+
+	// validate user ID
+	id := parts[3]
+	if !validator.IsInteger(id) {
+		response.JsonResponse(w, http.StatusBadRequest, "Invalid user ID", nil)
+		return
+	}
+
+	idInt, err := validator.StrToInt64(id)
+	if err != nil {
+		response.JsonResponse(w, http.StatusBadRequest, "Invalid user ID", nil)
+		return
+	}
+
+	//
+	user, err := h.service.GetUserByID(idInt)
+	if err != nil {
+		response.JsonResponse(w, http.StatusInternalServerError, "Failed to fetch user", err.Error())
+		return
+	}
+
+	// respond with fetched user
+	response.JsonResponse(w, http.StatusOK, "User fetched successfully", user)
 }

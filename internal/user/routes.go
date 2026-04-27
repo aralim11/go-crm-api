@@ -14,5 +14,6 @@ func RegisterModule(router *http.ServeMux, db *sqlx.DB) {
 
 	router.Handle("/api/user-create", http.HandlerFunc(userHandler.CreateUser))
 	router.Handle("/api/users", http.HandlerFunc(userHandler.GetUsers))
+	router.Handle("/api/users/{id}", http.HandlerFunc(userHandler.GetUserByID))
 
 }

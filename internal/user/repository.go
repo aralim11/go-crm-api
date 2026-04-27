@@ -9,6 +9,7 @@ import (
 type UserRepository interface {
 	Create(user *User) (*User, error)
 	List() ([]*User, error)
+	GetUserByID(id int64) (*User, error)
 	FindByEmail(email string) (*User, error)
 }
 
@@ -66,6 +67,22 @@ func (r *userRepo) FindByEmail(email string) (*User, error) {
 			return nil, nil
 		}
 
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (r *userRepo) GetUserByID(id int64) (*User, error) {
+	var user User
+	err := r.db.QueryRow(
+		"SELECT id, name, email FROM users WHERE id = ?",
+		id,
+	).Scan(&user.ID, &user.Name, &user.Email)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
 		return nil, err
 	}
 	return &user, nil

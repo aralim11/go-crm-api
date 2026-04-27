@@ -13,10 +13,10 @@ func MigrateDB(dbConn *sql.DB, dir string) error {
 	}
 
 	// Step 1: DOWN (rollback all)
-	_, err := migrate.Exec(dbConn, "mysql", migrations, migrate.Down)
-	if err != nil {
-		return fmt.Errorf("Down migration failed: %w", err)
-	}
+	// _, err := migrate.Exec(dbConn, "mysql", migrations, migrate.Down)
+	// if err != nil {
+	// 	return fmt.Errorf("Down migration failed: %w", err)
+	// }
 
 	// Step 2: UP (apply fresh)
 	number, err := migrate.Exec(dbConn, "mysql", migrations, migrate.Up)
