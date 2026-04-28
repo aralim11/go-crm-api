@@ -10,6 +10,7 @@ type UserRepository interface {
 	Create(user *User) (*User, error)
 	List() ([]*UserResponse, error)
 	GetUserByID(id int64) (*UserResponse, error)
+	// UpdateUser(user *UpdateUserRequest) (*UserResponse, error)
 	FindByEmail(email string) (*UserResponse, error)
 	FindByMobile(mobile string) (*UserResponse, error)
 }
@@ -102,3 +103,7 @@ func (r *userRepo) GetUserByID(id int64) (*UserResponse, error) {
 	}
 	return &user, nil
 }
+
+// func (r *userRepo) UpdateUser(user *UpdateUserRequest) (*UserResponse, error) {
+// 	var user UpdateUserRequest
+// }

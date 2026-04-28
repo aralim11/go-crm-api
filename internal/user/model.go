@@ -27,3 +27,10 @@ type UserResponse struct {
 	Mobile  string `json:"mobile"`
 	Address string `json:"address,omitempty"`
 }
+
+type UpdateUserRequest struct {
+	Name    string  `json:"name"`
+	Email   string  `json:"email"`
+	Mobile  string  `json:"mobile"`
+	Address *string `json:"address, omitempty"`
+}
