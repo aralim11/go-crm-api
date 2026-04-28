@@ -8,9 +8,10 @@ import (
 
 type UserRepository interface {
 	Create(user *User) (*User, error)
-	List() ([]*User, error)
+	List() ([]*UserResponse, error)
 	GetUserByID(id int64) (*UserResponse, error)
-	FindByEmail(email string) (*User, error)
+	FindByEmail(email string) (*UserResponse, error)
+	FindByMobile(mobile string) (*UserResponse, error)
 }
 
 type userRepo struct {
@@ -48,10 +49,10 @@ func (r *userRepo) Create(user *User) (*User, error) {
 	return user, nil
 }
 
-func (r *userRepo) List() ([]*User, error) {
-	var users []*User
+func (r *userRepo) List() ([]*UserResponse, error) {
+	var users []*UserResponse
 
-	err := r.db.Select(&users, "SELECT id, name, email, mobile, address, status FROM users")
+	err := r.db.Select(&users, "SELECT id, name, email, mobile, address FROM users")
 	if err != nil {
 		return nil, err
 	}
@@ -59,9 +60,9 @@ func (r *userRepo) List() ([]*User, error) {
 	return users, nil
 }
 
-func (r *userRepo) FindByEmail(email string) (*User, error) {
-	var user User
-	err := r.db.Get(&user, "SELECT id, name, email, mobile, address, status FROM users WHERE email = ?", email)
+func (r *userRepo) FindByEmail(email string) (*UserResponse, error) {
+	var user UserResponse
+	err := r.db.Get(&user, "SELECT id, name, email, mobile, address FROM users WHERE email = ?", email)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
@@ -72,12 +73,26 @@ func (r *userRepo) FindByEmail(email string) (*User, error) {
 	return &user, nil
 }
 
+func (r *userRepo) FindByMobile(mobile string) (*UserResponse, error) {
+	var user UserResponse
+	err := r.db.Get(&user, "SELECT id, name, email, mobile, address FROM users WHERE mobile = ?", mobile)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+
+		return nil, err
+	}
+
+	return &user, nil
+}
+
 func (r *userRepo) GetUserByID(id int64) (*UserResponse, error) {
 	var user UserResponse
 	err := r.db.QueryRow(
-		"SELECT id, name, email, mobile FROM users WHERE id = ?",
+		"SELECT id, name, email, mobile, address FROM users WHERE id = ?",
 		id,
-	).Scan(&user.ID, &user.Name, &user.Email, &user.Mobile)
+	).Scan(&user.ID, &user.Name, &user.Email, &user.Mobile, &user.Address)
 
 	if err != nil {
 		if err == sql.ErrNoRows {

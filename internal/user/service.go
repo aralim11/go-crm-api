@@ -4,7 +4,7 @@ import "fmt"
 
 type UserService interface {
 	Create(req CreateUserRequest) (*User, error)
-	List() ([]*User, error)
+	List() ([]*UserResponse, error)
 	GetUserByID(id int64) (*UserResponse, error)
 }
 
@@ -30,6 +30,16 @@ func (s *userService) Create(req CreateUserRequest) (*User, error) {
 		return nil, fmt.Errorf("email already exists")
 	}
 
+	// check if mobile already exist
+	existingMobile, err := s.repo.FindByMobile(req.Mobile)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check existing mobile: %w", err)
+	}
+
+	if existingMobile != nil {
+		return nil, fmt.Errorf("mobile already exist")
+	}
+
 	// create user object
 	user := &User{
 		Name:    req.Name,
@@ -50,7 +60,7 @@ func (s *userService) Create(req CreateUserRequest) (*User, error) {
 /**
  * List users
  */
-func (s *userService) List() ([]*User, error) {
+func (s *userService) List() ([]*UserResponse, error) {
 	users, err := s.repo.List()
 	if err != nil {
 		return nil, err
@@ -59,6 +69,9 @@ func (s *userService) List() ([]*User, error) {
 	return users, nil
 }
 
+/**
+ * Get user by ID
+ */
 func (s *userService) GetUserByID(id int64) (*UserResponse, error) {
 	user, err := s.repo.GetUserByID(id)
 	if err != nil {

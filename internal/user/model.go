@@ -21,8 +21,9 @@ type CreateUserRequest struct {
 }
 
 type UserResponse struct {
-	ID     int    `json:"id"`
-	Name   string `json:"name"`
-	Email  string `json:"email"`
-	Mobile string `json:"mobile"`
+	ID      int    `json:"id"`
+	Name    string `json:"name"`
+	Email   string `json:"email"`
+	Mobile  string `json:"mobile"`
+	Address string `json:"address,omitempty"`
 }
