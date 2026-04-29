@@ -2,6 +2,7 @@ package user
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -10,7 +11,8 @@ type UserRepository interface {
 	Create(user *User) (*User, error)
 	List() ([]*UserResponse, error)
 	GetUserByID(id int64) (*UserResponse, error)
-	// UpdateUser(user *UpdateUserRequest) (*UserResponse, error)
+	UpdateUser(user *UpdateUserRequest, id int64) (*UserResponse, error)
+	DeleteUser(id int64) error
 	FindByEmail(email string) (*UserResponse, error)
 	FindByMobile(mobile string) (*UserResponse, error)
 }
@@ -24,15 +26,8 @@ func NewUserRepo(db *sqlx.DB) UserRepository {
 }
 
 func (r *userRepo) Create(user *User) (*User, error) {
-	result, err := r.db.Exec(`
-		INSERT INTO users (name, email, mobile, address, status)
-		VALUES (?, ?, ?, ?, ?)
-	`,
-		user.Name,
-		user.Email,
-		user.Mobile,
-		user.Address,
-		user.Status,
+	result, err := r.db.Exec(`INSERT INTO users (name, email, mobile, address, status)
+		VALUES (?, ?, ?, ?, ?)`, user.Name, user.Email, user.Mobile, user.Address, user.Status,
 	)
 
 	// 🔥 check for error
@@ -90,10 +85,7 @@ func (r *userRepo) FindByMobile(mobile string) (*UserResponse, error) {
 
 func (r *userRepo) GetUserByID(id int64) (*UserResponse, error) {
 	var user UserResponse
-	err := r.db.QueryRow(
-		"SELECT id, name, email, mobile, address FROM users WHERE id = ?",
-		id,
-	).Scan(&user.ID, &user.Name, &user.Email, &user.Mobile, &user.Address)
+	err := r.db.QueryRow("SELECT id, name, email, mobile, address FROM users WHERE id = ?", id).Scan(&user.ID, &user.Name, &user.Email, &user.Mobile, &user.Address)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -104,6 +96,32 @@ func (r *userRepo) GetUserByID(id int64) (*UserResponse, error) {
 	return &user, nil
 }
 
-// func (r *userRepo) UpdateUser(user *UpdateUserRequest) (*UserResponse, error) {
-// 	var user UpdateUserRequest
-// }
+func (r *userRepo) UpdateUser(user *UpdateUserRequest, id int64) (*UserResponse, error) {
+	var userReq UserResponse
+	result, err := r.db.Exec("UPDATE users SET name=?, email=?, mobile=? WHERE id=?", &userReq.Name, &userReq.Email, &userReq.Mobile, id)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, _ := result.RowsAffected()
+	if rows == 0 {
+		return nil, fmt.Errorf("user not found")
+	}
+
+	return &userReq, nil
+}
+
+func (r *userRepo) DeleteUser(id int64) error {
+
+	result, err := r.db.Exec("DELETE FROM users WHERE id=?", id)
+	if err != nil {
+		return err
+	}
+
+	row, _ := result.RowsAffected()
+	if row == 0 {
+		return fmt.Errorf("User not found")
+	}
+
+	return nil
+}

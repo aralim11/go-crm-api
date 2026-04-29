@@ -128,3 +128,42 @@ func (h *Handler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 	// respond with fetched user
 	response.JsonResponse(w, http.StatusOK, "User fetched successfully", user)
 }
+
+func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
+	// check method
+	if r.Method != http.MethodDelete {
+		response.JsonResponse(w, http.StatusMethodNotAllowed, "Method not allowed!!", nil)
+		return
+	}
+
+	// extract user ID from URL
+	path := r.URL.Path
+	parts := strings.Split(path, "/")
+	if len(parts) != 5 {
+		response.JsonResponse(w, http.StatusBadRequest, "Invalid segment format", nil)
+		return
+	}
+
+	// validate user ID
+	id := parts[3]
+	if !validator.IsInteger(id) {
+		response.JsonResponse(w, http.StatusBadRequest, "Invalid user ID", nil)
+		return
+	}
+
+	// convert user ID to int64
+	idInt, err := validator.StrToInt64(id)
+	if err != nil {
+		response.JsonResponse(w, http.StatusBadRequest, "Invalid user ID", nil)
+		return
+	}
+
+	// delete data
+	err = h.service.DeleteUser(idInt)
+	if err != nil {
+		response.JsonResponse(w, http.StatusInternalServerError, "Failed to delete user", err.Error())
+		return
+	}
+
+	response.JsonResponse(w, http.StatusOK, "Delete successful", nil)
+}

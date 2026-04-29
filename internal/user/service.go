@@ -6,6 +6,8 @@ type UserService interface {
 	Create(req CreateUserRequest) (*User, error)
 	List() ([]*UserResponse, error)
 	GetUserByID(id int64) (*UserResponse, error)
+	UpdateUser(user *UpdateUserRequest, id int64) (*UserResponse, error)
+	DeleteUser(id int64) error
 }
 
 type userService struct {
@@ -78,4 +80,22 @@ func (s *userService) GetUserByID(id int64) (*UserResponse, error) {
 		return nil, err
 	}
 	return user, nil
+}
+
+/**
+ * Update user
+ */
+func (s *userService) UpdateUser(user *UpdateUserRequest, id int64) (*UserResponse, error) {
+	var updateUserReq UpdateUserRequest
+}
+
+/**
+ * Delete user
+ */
+func (s *userService) DeleteUser(id int64) error {
+	err := s.repo.DeleteUser(id)
+	if err != nil {
+		return err
+	}
+	return nil
 }
