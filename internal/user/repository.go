@@ -11,7 +11,7 @@ type UserRepository interface {
 	Create(user *User) (*User, error)
 	List() ([]*UserResponse, error)
 	GetUserByID(id int64) (*UserResponse, error)
-	UpdateUser(user *UpdateUserRequest, id int64) (*UserResponse, error)
+	UpdateUser(user *UpdateUserRequest, id int64) error
 	DeleteUser(id int64) error
 	FindByEmail(email string) (*UserResponse, error)
 	FindByMobile(mobile string) (*UserResponse, error)
@@ -96,19 +96,18 @@ func (r *userRepo) GetUserByID(id int64) (*UserResponse, error) {
 	return &user, nil
 }
 
-func (r *userRepo) UpdateUser(user *UpdateUserRequest, id int64) (*UserResponse, error) {
-	var userReq UserResponse
-	result, err := r.db.Exec("UPDATE users SET name=?, email=?, mobile=? WHERE id=?", &userReq.Name, &userReq.Email, &userReq.Mobile, id)
+func (r *userRepo) UpdateUser(user *UpdateUserRequest, id int64) error {
+	result, err := r.db.Exec("UPDATE users SET name=?, email=?, mobile=? WHERE id=?", &user.Name, &user.Email, &user.Mobile, id)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	rows, _ := result.RowsAffected()
 	if rows == 0 {
-		return nil, fmt.Errorf("user not found")
+		return fmt.Errorf("user not found")
 	}
 
-	return &userReq, nil
+	return nil
 }
 
 func (r *userRepo) DeleteUser(id int64) error {

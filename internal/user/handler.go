@@ -129,6 +129,53 @@ func (h *Handler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 	response.JsonResponse(w, http.StatusOK, "User fetched successfully", user)
 }
 
+func (h *Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
+	// check method
+	if r.Method != http.MethodPut {
+		response.JsonResponse(w, http.StatusMethodNotAllowed, "Method not allowed!!", nil)
+		return
+	}
+
+	// extract user ID from URL
+	path := r.URL.Path
+	parts := strings.Split(path, "/")
+	if len(parts) != 4 {
+		response.JsonResponse(w, http.StatusBadRequest, "Invalid URL format", nil)
+		return
+	}
+
+	// validate user ID
+	id := parts[3]
+	if !validator.IsInteger(id) {
+		response.JsonResponse(w, http.StatusBadRequest, "Invalid user ID", nil)
+		return
+	}
+
+	// convert user ID to int64
+	idInt, err := validator.StrToInt64(id)
+	if err != nil {
+		response.JsonResponse(w, http.StatusBadRequest, "Invalid user ID", nil)
+		return
+	}
+
+	// get user by ID
+	user, err := h.service.UpdateUser(idInt)
+	if err != nil {
+		response.JsonResponse(w, http.StatusInternalServerError, "Failed to fetch user", err.Error())
+		return
+	}
+
+	// respond with no users found if empty
+	if user == nil {
+		response.JsonResponse(w, http.StatusOK, "No user found", nil)
+		return
+	}
+
+	// respond with fetched user
+	response.JsonResponse(w, http.StatusOK, "User fetched successfully", user)
+
+}
+
 func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	// check method
 	if r.Method != http.MethodDelete {

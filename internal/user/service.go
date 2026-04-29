@@ -1,6 +1,8 @@
 package user
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type UserService interface {
 	Create(req CreateUserRequest) (*User, error)
@@ -86,7 +88,20 @@ func (s *userService) GetUserByID(id int64) (*UserResponse, error) {
  * Update user
  */
 func (s *userService) UpdateUser(user *UpdateUserRequest, id int64) (*UserResponse, error) {
-	var updateUserReq UpdateUserRequest
+	// update user
+	err := s.repo.UpdateUser(user, id)
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UserResponse{
+		ID:     id,
+		Name:   user.Name,
+		Email:  user.Email,
+		Mobile: user.Mobile,
+	}
+
+	return response, nil
 }
 
 /**
