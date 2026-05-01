@@ -88,8 +88,29 @@ func (s *userService) GetUserByID(id int64) (*UserResponse, error) {
  * Update user
  */
 func (s *userService) UpdateUser(user *UpdateUserRequest, id int64) (*UserResponse, error) {
+
+	// check if email already exists
+	existingUser, err := s.repo.FindByEmail(user.Email, id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check existing user: %w", err)
+	}
+
+	if existingUser != nil {
+		return nil, fmt.Errorf("email already exists")
+	}
+
+	// check if mobile already exist
+	existingMobile, err := s.repo.FindByMobile(user.Mobile, id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check existing mobile: %w", err)
+	}
+
+	if existingMobile != nil {
+		return nil, fmt.Errorf("mobile already exist")
+	}
+
 	// update user
-	err := s.repo.UpdateUser(user, id)
+	err = s.repo.UpdateUser(user, id)
 	if err != nil {
 		return nil, err
 	}

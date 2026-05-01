@@ -130,6 +130,7 @@ func (h *Handler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
+
 	// check method
 	if r.Method != http.MethodPut {
 		response.JsonResponse(w, http.StatusMethodNotAllowed, "Method not allowed!!", nil)
@@ -139,7 +140,7 @@ func (h *Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	// extract user ID from URL
 	path := r.URL.Path
 	parts := strings.Split(path, "/")
-	if len(parts) != 4 {
+	if len(parts) != 5 {
 		response.JsonResponse(w, http.StatusBadRequest, "Invalid URL format", nil)
 		return
 	}
@@ -158,21 +159,39 @@ func (h *Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// get user by ID
-	user, err := h.service.UpdateUser(idInt)
+	// decode JSON
+	var req UpdateUserRequest
+	err = json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
-		response.JsonResponse(w, http.StatusInternalServerError, "Failed to fetch user", err.Error())
+		response.JsonResponse(w, http.StatusBadRequest, "Invalid JSON format", nil)
 		return
 	}
 
-	// respond with no users found if empty
-	if user == nil {
-		response.JsonResponse(w, http.StatusOK, "No user found", nil)
+	// validate request
+	if validator.IsBlank(req.Name) {
+		response.JsonResponse(w, http.StatusBadRequest, "Name is required", nil)
 		return
 	}
 
-	// respond with fetched user
-	response.JsonResponse(w, http.StatusOK, "User fetched successfully", user)
+	if validator.IsBlank(req.Email) {
+		response.JsonResponse(w, http.StatusBadRequest, "Email is required", nil)
+		return
+	}
+
+	if validator.IsBlank(req.Mobile) {
+		response.JsonResponse(w, http.StatusBadRequest, "Mobile is required", nil)
+		return
+	}
+
+	// update user
+	user, err := h.service.UpdateUser(&req, idInt)
+	if err != nil {
+		response.JsonResponse(w, http.StatusInternalServerError, err.Error(), err)
+		return
+	}
+
+	// respond with created user
+	response.JsonResponse(w, http.StatusCreated, "User updated successfully", user)
 
 }
 

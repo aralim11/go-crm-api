@@ -13,8 +13,8 @@ type UserRepository interface {
 	GetUserByID(id int64) (*UserResponse, error)
 	UpdateUser(user *UpdateUserRequest, id int64) error
 	DeleteUser(id int64) error
-	FindByEmail(email string) (*UserResponse, error)
-	FindByMobile(mobile string) (*UserResponse, error)
+	FindByEmail(email string, id ...int64) (*UserResponse, error)
+	FindByMobile(mobile string, id ...int64) (*UserResponse, error)
 }
 
 type userRepo struct {
@@ -56,9 +56,16 @@ func (r *userRepo) List() ([]*UserResponse, error) {
 	return users, nil
 }
 
-func (r *userRepo) FindByEmail(email string) (*UserResponse, error) {
+func (r *userRepo) FindByEmail(email string, id ...int64) (*UserResponse, error) {
 	var user UserResponse
-	err := r.db.Get(&user, "SELECT id, name, email, mobile, address FROM users WHERE email = ?", email)
+	var err error
+
+	if len(id) > 0 && id[0] != 0 {
+		err = r.db.Get(&user, "SELECT id, name, email, mobile, address FROM users WHERE email = ? AND id != ?", email, id[0])
+	} else {
+		err = r.db.Get(&user, "SELECT id, name, email, mobile, address FROM users WHERE email = ?", email)
+	}
+
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
@@ -69,9 +76,16 @@ func (r *userRepo) FindByEmail(email string) (*UserResponse, error) {
 	return &user, nil
 }
 
-func (r *userRepo) FindByMobile(mobile string) (*UserResponse, error) {
+func (r *userRepo) FindByMobile(mobile string, id ...int64) (*UserResponse, error) {
 	var user UserResponse
-	err := r.db.Get(&user, "SELECT id, name, email, mobile, address FROM users WHERE mobile = ?", mobile)
+	var err error
+
+	if len(id) > 0 && id[0] != 0 {
+		err = r.db.Get(&user, "SELECT id, name, email, mobile, address FROM users WHERE mobile = ? AND id != ?", mobile, id[0])
+	} else {
+		err = r.db.Get(&user, "SELECT id, name, email, mobile, address FROM users WHERE mobile = ?", mobile)
+	}
+
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
@@ -97,14 +111,9 @@ func (r *userRepo) GetUserByID(id int64) (*UserResponse, error) {
 }
 
 func (r *userRepo) UpdateUser(user *UpdateUserRequest, id int64) error {
-	result, err := r.db.Exec("UPDATE users SET name=?, email=?, mobile=? WHERE id=?", &user.Name, &user.Email, &user.Mobile, id)
+	_, err := r.db.Exec("UPDATE users SET name=?, email=?, mobile=? WHERE id=?", user.Name, user.Email, user.Mobile, id)
 	if err != nil {
 		return err
-	}
-
-	rows, _ := result.RowsAffected()
-	if rows == 0 {
-		return fmt.Errorf("user not found")
 	}
 
 	return nil
