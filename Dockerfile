@@ -12,6 +12,6 @@ COPY . .
 # install air (optional for dev)
 RUN go install github.com/air-verse/air@latest
 
-EXPOSE 8082
+EXPOSE 8000
 
 CMD ["air"]

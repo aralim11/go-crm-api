@@ -1,13 +1,33 @@
-version: "3.9"
+networks:
+  go_crm_network:
 
 services:
   app:
     build: .
     container_name: go-app
     ports:
-      - "8082:8082"
+      - "3000:8000"
     env_file:
       - .env
     volumes:
       - .:/app   # for development (auto reflect changes)
     restart: unless-stopped
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./docker/mysql:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    networks:
+      - go_crm_network
