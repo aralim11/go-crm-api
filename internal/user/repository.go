@@ -26,8 +26,8 @@ func NewUserRepo(db *sqlx.DB) UserRepository {
 }
 
 func (r *userRepo) Create(user *User) (*User, error) {
-	result, err := r.db.Exec(`INSERT INTO users (name, email, mobile, address, status)
-		VALUES (?, ?, ?, ?, ?)`, user.Name, user.Email, user.Mobile, user.Address, user.Status,
+	result, err := r.db.Exec(`INSERT INTO users (name, email, mobile, address, status, password)
+		VALUES (?, ?, ?, ?, ?, ?)`, user.Name, user.Email, user.Mobile, user.Address, user.Status, user.Password,
 	)
 
 	// 🔥 check for error

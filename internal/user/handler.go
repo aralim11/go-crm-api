@@ -48,6 +48,17 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if validator.IsBlank(req.Password) {
+		response.JsonResponse(w, http.StatusBadRequest, "Password is required", nil)
+		return
+	}
+
+	err = validator.ValidatePassword(req.Password)
+	if err != nil {
+		response.JsonResponse(w, http.StatusBadRequest, "Password validation failed", err.Error())
+		return
+	}
+
 	// create user
 	user, err := h.service.Create(req)
 	if err != nil {

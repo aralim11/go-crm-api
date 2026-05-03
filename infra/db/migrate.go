@@ -12,7 +12,7 @@ func MigrateDB(dbConn *sql.DB, dir string) error {
 		Dir: dir,
 	}
 
-	// Step 1: DOWN (rollback all)
+	// // Step 1: DOWN (rollback all)
 	// _, err := migrate.Exec(dbConn, "mysql", migrations, migrate.Down)
 	// if err != nil {
 	// 	return fmt.Errorf("Down migration failed: %w", err)

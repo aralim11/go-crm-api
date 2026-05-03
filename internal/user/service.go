@@ -2,6 +2,8 @@ package user
 
 import (
 	"fmt"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserService interface {
@@ -44,13 +46,20 @@ func (s *userService) Create(req CreateUserRequest) (*User, error) {
 		return nil, fmt.Errorf("mobile already exist")
 	}
 
+	// convert password bcrypt
+	hash, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to convert password Bcrypt: %w", err)
+	}
+
 	// create user object
 	user := &User{
-		Name:    req.Name,
-		Email:   req.Email,
-		Mobile:  req.Mobile,
-		Address: &req.Address,
-		Status:  1,
+		Name:     req.Name,
+		Email:    req.Email,
+		Password: string(hash),
+		Mobile:   req.Mobile,
+		Address:  &req.Address,
+		Status:   1,
 	}
 
 	user, err = s.repo.Create(user)

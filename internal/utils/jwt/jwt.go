@@ -49,7 +49,7 @@ func CreateJwt(data Payload, secret string) (string, error) {
 	return headerB64 + "." + payloadB64 + "." + signature, nil
 }
 
-func VerifyJwt(jwtToken string) bool {
+func VerifyJwt(jwtToken string, secret string) bool {
 	// check token empty
 	if jwtToken == "" {
 		return false
@@ -74,7 +74,7 @@ func VerifyJwt(jwtToken string) bool {
 
 	message := jwtHeader + "." + jwtPayload
 
-	byteArrSecret := []byte("your-secret-key-change-in-production-min-32-chars")
+	byteArrSecret := []byte(secret)
 	byteArrMessage := []byte(message)
 
 	hMac := hmac.New(sha256.New, byteArrSecret)
