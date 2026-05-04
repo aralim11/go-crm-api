@@ -11,5 +11,6 @@ require (
 
 require (
 	github.com/go-gorp/gorp/v3 v3.1.0 // indirect
+	github.com/golang-jwt/jwt/v5 v5.3.1 // indirect
 	golang.org/x/crypto v0.50.0 // indirect
 )

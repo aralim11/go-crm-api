@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/aralim11/go-crm-api/internal/utils/jwtToken"
 	"github.com/aralim11/go-crm-api/internal/utils/response"
 	"github.com/aralim11/go-crm-api/internal/utils/validator"
 )
@@ -74,6 +75,27 @@ func (h *Handler) GetUsers(w http.ResponseWriter, r *http.Request) {
 	// check method
 	if r.Method != http.MethodGet {
 		response.JsonResponse(w, http.StatusMethodNotAllowed, "Method not allowed!!", nil)
+		return
+	}
+
+	authHeader := r.Header.Get("Authorization")
+
+	if authHeader == "" {
+		http.Error(w, "missing authorization header", http.StatusUnauthorized)
+		return
+	}
+
+	// remove "Bearer " prefix
+	tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
+
+	if tokenStr == authHeader {
+		http.Error(w, "invalid token format", http.StatusUnauthorized)
+		return
+	}
+
+	checkToken := jwtToken.VerifyJWT(tokenStr)
+	if !checkToken {
+		http.Error(w, "invalid token", http.StatusUnauthorized)
 		return
 	}
 

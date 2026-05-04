@@ -7,5 +7,11 @@ import (
 )
 
 func RegisterModule(router *http.ServeMux, db *sqlx.DB) {
-	// router.Handle("/api/login", http.HandlerFunc(han))
+	// handlers
+	authRepository := NewAuthRepository(db)
+	authService := NewAuthService(authRepository)
+	authHandler := NewAuthHandler(authService)
+
+	// route lists
+	router.Handle("/api/login", http.HandlerFunc(authHandler.Login))
 }

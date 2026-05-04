@@ -1,21 +1,29 @@
 package auth
 
-import "github.com/jmoiron/sqlx"
+import (
+	"github.com/jmoiron/sqlx"
+)
 
 type AuthRepository interface {
-	FindByEmail(email string) (bool, error)
+	FindByEmail(email string) (*LoginRequest, error)
 }
 
-type authRepo struct {
+type authRepository struct {
 	db *sqlx.DB
 }
 
-func NewAuthRepo(db *sqlx.DB) AuthRepository {
-	return &authRepo{
+func NewAuthRepository(db *sqlx.DB) AuthRepository {
+	return &authRepository{
 		db: db,
 	}
 }
 
-func (r *authRepo) FindByEmail(email string) (bool, error) {
-	return true, nil
+func (r *authRepository) FindByEmail(email string) (*LoginRequest, error) {
+	var user LoginRequest
+	err := r.db.Get(&user, "SELECT email, password FROM users WHERE email=?", email)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
 }
