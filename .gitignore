@@ -9,3 +9,6 @@ tmp/
 
 # docker
 docker/
+
+# storage
+storage/

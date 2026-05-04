@@ -2,7 +2,9 @@ package report
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/aralim11/go-crm-api/internal/utils/response"
 )
@@ -42,4 +44,18 @@ func (h *Handler) Search(w http.ResponseWriter, r *http.Request) {
 
 	response.JsonResponse(w, http.StatusOK, "Data found", result)
 
+}
+
+func (h *Handler) Upload(w http.ResponseWriter, r *http.Request) {
+
+	f, err := os.Open("storage/example.txt")
+	if err != nil {
+		panic(err)
+	}
+
+	fInfo, err := f.Stat()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(fInfo.Mode())
 }
