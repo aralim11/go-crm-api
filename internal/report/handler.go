@@ -2,11 +2,13 @@ package report
 
 import (
 	"encoding/json"
-	"fmt"
+	"io"
 	"net/http"
-	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/aralim11/go-crm-api/internal/utils/response"
+	"github.com/aralim11/go-crm-api/internal/utils/validator"
 )
 
 type Handler struct {
@@ -47,15 +49,68 @@ func (h *Handler) Search(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Upload(w http.ResponseWriter, r *http.Request) {
-
-	f, err := os.Open("storage/example.txt")
-	if err != nil {
-		panic(err)
+	// check request method
+	if r.Method != http.MethodPost {
+		response.JsonResponse(w, http.StatusMethodNotAllowed, "Method not allowed", nil)
+		return
 	}
 
-	fInfo, err := f.Stat()
+	// max request and file size validation
+	const maxRequestBytesReader = 10 << 20
+	const maxFileSize = 6 << 20
+
+	r.Body = http.MaxBytesReader(w, r.Body, maxRequestBytesReader)
+	err := r.ParseMultipartForm(maxRequestBytesReader)
 	if err != nil {
-		panic(err)
+		response.JsonResponse(w, http.StatusBadRequest, "Request is too large", nil)
+		return
 	}
-	fmt.Println(fInfo.Mode())
+
+	// perse text field and validate
+	title := r.FormValue("title")
+	if validator.IsBlank(title) {
+		response.JsonResponse(w, http.StatusBadRequest, "title is required", nil)
+		return
+	}
+
+	// retrieve file from request
+	file, header, err := r.FormFile("image")
+	if err != nil {
+		response.JsonResponse(w, http.StatusBadRequest, "Error retrieving profile picture", err.Error())
+		return
+	}
+	defer file.Close()
+
+	// exact file size validation
+	if header.Size > maxFileSize {
+		response.JsonResponse(w, http.StatusBadRequest, "File size exceeds the 2MB limit", nil)
+		return
+	}
+
+	// get extension and validation
+	extension := strings.ToLower(filepath.Ext(header.Filename))
+	allowedExtensions := map[string]bool{
+		".jpg":  true,
+		".jpeg": true,
+		".png":  true,
+		".pdf":  true,
+	}
+
+	if !allowedExtensions[extension] {
+		response.JsonResponse(w, http.StatusUnsupportedMediaType, "Invalid file format. Only JPG, JPEG, PNG, and GIF allowed.", nil)
+		return
+	}
+
+	// validate (MIME check)
+	buffer := make([]byte, 512)
+	if _, err := file.Read(buffer); err != nil && err != io.EOF {
+		response.JsonResponse(w, http.StatusInternalServerError, "Error reading file contents", err.Error())
+		return
+	}
+
+	// blank buffer for next usage
+	if _, err := file.Seek(0, io.SeekStart); err != nil {
+		response.JsonResponse(w, http.StatusInternalServerError, "Error resetting file pointer", nil)
+		return
+	}
 }
