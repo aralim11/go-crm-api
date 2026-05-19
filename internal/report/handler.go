@@ -4,11 +4,13 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/aralim11/go-crm-api/internal/utils/response"
 	"github.com/aralim11/go-crm-api/internal/utils/validator"
+	"github.com/google/uuid"
 )
 
 type Handler struct {
@@ -73,7 +75,7 @@ func (h *Handler) Upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// retrieve file from request
+	// perse file from request
 	file, header, err := r.FormFile("image")
 	if err != nil {
 		response.JsonResponse(w, http.StatusBadRequest, "Error retrieving profile picture", err.Error())
@@ -113,4 +115,37 @@ func (h *Handler) Upload(w http.ResponseWriter, r *http.Request) {
 		response.JsonResponse(w, http.StatusInternalServerError, "Error resetting file pointer", nil)
 		return
 	}
+
+	// check content type
+	mimeType := http.DetectContentType(buffer)
+	if !strings.HasPrefix(mimeType, "image/") {
+		response.JsonResponse(w, http.StatusUnsupportedMediaType, "The uploaded file is not a valid image binary", nil)
+		return
+	}
+
+	// check directory
+	err = os.MkdirAll("./storage", os.ModePerm)
+	if err != nil {
+		response.JsonResponse(w, http.StatusInternalServerError, "Failed to create uploads directory", err.Error())
+		return
+	}
+
+	// create destination file
+	newName := uuid.New().String() + extension
+	dstPath := filepath.Join("./storage", newName)
+	dstFile, err := os.Create(dstPath)
+	if err != nil {
+		response.JsonResponse(w, http.StatusInternalServerError, "Failed to create destination file", nil)
+		return
+	}
+	defer dstFile.Close()
+
+	// copy file to the destination file
+	if _, err := io.Copy(dstFile, file); err != nil {
+		response.JsonResponse(w, http.StatusInternalServerError, "Failed to save file", err.Error())
+		return
+	}
+
+	// return response
+	response.JsonResponse(w, http.StatusOK, "Image successfully uploaded", nil)
 }
