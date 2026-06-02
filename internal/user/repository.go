@@ -30,12 +30,12 @@ func (r *userRepo) Create(user *User) (*User, error) {
 		VALUES (?, ?, ?, ?, ?, ?)`, user.Name, user.Email, user.Mobile, user.Address, user.Status, user.Password,
 	)
 
-	// 🔥 check for error
+	// check for error
 	if err != nil {
 		return nil, err
 	}
 
-	// 🔥 get auto increment ID
+	// get auto increment ID
 	id, err := result.LastInsertId()
 	if err != nil {
 		return nil, err

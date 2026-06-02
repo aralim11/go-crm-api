@@ -119,3 +119,66 @@ func (h *Handler) Upload(w http.ResponseWriter, r *http.Request) {
 	// return response
 	response.JsonResponse(w, http.StatusOK, "Image successfully uploaded", nil)
 }
+
+func (h *Handler) CsvUpload(w http.ResponseWriter, r *http.Request) {
+	// check request method
+	if r.Method != http.MethodPost {
+		response.JsonResponse(w, http.StatusMethodNotAllowed, "Method not allowed", nil)
+		return
+	}
+
+	// perse file from request
+	file, header, err := r.FormFile("file")
+	if err != nil {
+		response.JsonResponse(w, http.StatusBadRequest, "Error retrieving file", err.Error())
+		return
+	}
+	defer file.Close()
+
+	// get extension and validation
+	extension := strings.ToLower(filepath.Ext(header.Filename))
+	allowedExtensions := map[string]bool{
+		".csv": true,
+	}
+
+	if !allowedExtensions[extension] {
+		response.JsonResponse(w, http.StatusUnsupportedMediaType, "Invalid file format. Only csv allowed.", nil)
+		return
+	}
+
+	// blank buffer for next usage
+	if _, err := file.Seek(0, io.SeekStart); err != nil {
+		response.JsonResponse(w, http.StatusInternalServerError, "Error resetting file pointer", nil)
+		return
+	}
+
+	// check directory
+	err = os.MkdirAll("./storage", os.ModePerm)
+	if err != nil {
+		response.JsonResponse(w, http.StatusInternalServerError, "Failed to create uploads directory", err.Error())
+		return
+	}
+
+	// create destination file
+	newName := uuid.New().String() + extension
+	dstPath := filepath.Join("./storage", newName)
+	dstFile, err := os.Create(dstPath)
+	if err != nil {
+		response.JsonResponse(w, http.StatusInternalServerError, "Failed to create destination file", nil)
+		return
+	}
+	defer dstFile.Close()
+
+	// copy file to the destination file
+	if _, err := io.Copy(dstFile, file); err != nil {
+		response.JsonResponse(w, http.StatusInternalServerError, "Failed to save file", err.Error())
+		return
+	}
+
+	err = h.service.ProcessCSV(dstPath)
+	if err != nil {
+		response.JsonResponse(w, http.StatusInternalServerError, "Processing error", err.Error())
+		return
+	}
+
+}

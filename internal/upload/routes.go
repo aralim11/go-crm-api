@@ -12,5 +12,6 @@ func RegisterModule(router *http.ServeMux, db *sqlx.DB) {
 	uploadHandler := NewUploadHandler(uploadService)
 
 	router.Handle("/api/upload", http.HandlerFunc(uploadHandler.Upload))
+	router.Handle("/api/csv", http.HandlerFunc(uploadHandler.CsvUpload))
 
 }

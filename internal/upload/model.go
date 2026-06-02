@@ -1,7 +1,15 @@
 package upload
 
-type Image struct {
-	ID        int64
-	Title     string
-	ImageName string
+import "time"
+
+type People struct {
+	ID          int64
+	UserID      string
+	FirstName   string
+	LastName    string
+	Sex         string
+	Email       string
+	Phone       string
+	DateOfBirth time.Time
+	JobTitle    string
 }
