@@ -1,17 +1,25 @@
 package validator
 
-import "time"
+import (
+	"time"
+)
 
 func ParseDate(value string) time.Time {
-	// timezone
 	loc, _ := time.LoadLocation("Asia/Dhaka")
 
-	// try main format first, value, timezone
-	convertTime, err := time.ParseInLocation("2006-01-02", value, loc)
-	if err == nil {
-		return convertTime
+	formats := []string{
+		"1/2/2006",
+		"01/02/2006",
+		"2006-01-02",
+		"02-01-2006",
 	}
 
-	// fallback format
-	return convertTime
+	for _, f := range formats {
+		if t, err := time.ParseInLocation(f, value, loc); err == nil {
+			return t
+		}
+	}
+
+	// fallback (zero value)
+	return time.Time{}
 }

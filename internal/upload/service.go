@@ -24,8 +24,11 @@ func NewUploadService(repo UploadRepository) UploadService {
 func (s *uploadService) ImageUpload() {}
 
 func (s *uploadService) ProcessCSV(dstPath string) error {
-	// open csv
-	csvFile, _ := os.Open(dstPath)
+	// open csv from server using path
+	csvFile, err := os.Open(dstPath)
+	if err != nil {
+		return err
+	}
 	defer csvFile.Close()
 
 	// read csv from server
@@ -51,6 +54,8 @@ func (s *uploadService) ProcessCSV(dstPath string) error {
 			DateOfBirth: validator.ParseDate(record[6]),
 			JobTitle:    record[7],
 		}
+
+		// fmt.Println(people)
 
 		err = s.repo.CsvUpload(&people)
 		if err != nil {

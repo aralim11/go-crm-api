@@ -6,8 +6,8 @@ CREATE TABLE peoples (
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
     sex ENUM('Male', 'Female') NOT NULL,
-    email VARCHAR(100) NOT NULL UNIQUE,
-    phone VARCHAR(20) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    phone VARCHAR(50) NOT NULL,
     date_of_birth DATE NOT NULL,
     job_title VARCHAR(150) NOT NULL
 );
