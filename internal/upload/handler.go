@@ -182,3 +182,27 @@ func (h *Handler) CsvUpload(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
+
+func (h *Handler) PeopleList(w http.ResponseWriter, r *http.Request) {
+	// check request method
+	if r.Method != http.MethodGet {
+		response.JsonResponse(w, http.StatusMethodNotAllowed, "Method not allowed", nil)
+		return
+	}
+
+	// get peoples
+	peoples, err := h.service.PeopleList()
+	if err != nil {
+		response.JsonResponse(w, http.StatusInternalServerError, "Failed to fetch users", err.Error())
+		return
+	}
+
+	// respond with no peoples found if empty
+	if len(peoples) == 0 {
+		response.JsonResponse(w, http.StatusOK, "No peoples found", nil)
+		return
+	}
+
+	// respond with peoples
+	response.JsonResponse(w, http.StatusOK, "Peoples fetched successfully", peoples)
+}

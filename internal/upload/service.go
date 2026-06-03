@@ -9,7 +9,7 @@ import (
 )
 
 type UploadService interface {
-	ImageUpload()
+	PeopleList() ([]*People, error)
 	ProcessCSV(file string) error
 }
 
@@ -21,7 +21,14 @@ func NewUploadService(repo UploadRepository) UploadService {
 	return &uploadService{repo: repo}
 }
 
-func (s *uploadService) ImageUpload() {}
+func (s *uploadService) PeopleList() ([]*People, error) {
+	peoples, err := s.repo.PeopleList()
+	if err != nil {
+		return nil, err
+	}
+
+	return peoples, nil
+}
 
 func (s *uploadService) ProcessCSV(dstPath string) error {
 	// open csv from server using path

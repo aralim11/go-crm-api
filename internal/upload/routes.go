@@ -13,5 +13,6 @@ func RegisterModule(router *http.ServeMux, db *sqlx.DB) {
 
 	router.Handle("/api/upload", http.HandlerFunc(uploadHandler.Upload))
 	router.Handle("/api/csv", http.HandlerFunc(uploadHandler.CsvUpload))
+	router.Handle("/api/people-list", http.HandlerFunc(uploadHandler.PeopleList))
 
 }

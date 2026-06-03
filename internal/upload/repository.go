@@ -5,7 +5,7 @@ import (
 )
 
 type UploadRepository interface {
-	ImageUpload()
+	PeopleList() ([]*People, error)
 	CsvUpload(people *People) error
 }
 
@@ -17,7 +17,16 @@ func NewUploadRepo(db *sqlx.DB) UploadRepository {
 	return &uploadRepo{db: db}
 }
 
-func (r *uploadRepo) ImageUpload() {}
+func (r *uploadRepo) PeopleList() ([]*People, error) {
+	var peoples []*People
+
+	err := r.db.Select(&peoples, "SELECT * FROM peoples limit 1000")
+	if err != nil {
+		return nil, err
+	}
+
+	return peoples, nil
+}
 
 func (r *uploadRepo) CsvUpload(people *People) error {
 	_, err := r.db.Exec(
