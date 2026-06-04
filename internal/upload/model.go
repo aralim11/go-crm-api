@@ -13,3 +13,15 @@ type People struct {
 	DateOfBirth time.Time `db:"date_of_birth" json:"date_of_birth"`
 	JobTitle    string    `db:"job_title" json:"job_title"`
 }
+
+type Pagination struct {
+	Limit       int `json:"limit"`
+	CurrentPage int `json:"current_page"`
+	TotalItems  int `json:"total_items"`
+	TotalPages  int `json:"total_pages"`
+}
+
+type PeopleResponse struct {
+	Data       []*People  `json:"data"`
+	Pagination Pagination `json:"pagination"`
+}

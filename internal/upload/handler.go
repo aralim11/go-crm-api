@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/aralim11/go-crm-api/internal/utils/response"
@@ -190,10 +191,33 @@ func (h *Handler) PeopleList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// get limit, page for pagination
+	page := 1
+	limit := 10
+
+	// page
+	if p := r.URL.Query().Get("page"); p != "" {
+		if v, err := strconv.Atoi(p); err == nil && v > 0 {
+			page = v
+		}
+	}
+
+	// limit
+	if l := r.URL.Query().Get("limit"); l != "" {
+		if v, err := strconv.Atoi(l); err == nil && v > 0 {
+			limit = v
+		}
+	}
+
+	// max limit protection
+	if limit > 100 {
+		limit = 100
+	}
+
 	// get peoples
-	peoples, err := h.service.PeopleList()
+	peoples, err := h.service.PeopleList(page, limit)
 	if err != nil {
-		response.JsonResponse(w, http.StatusInternalServerError, "Failed to fetch users", err.Error())
+		response.JsonResponse(w, http.StatusInternalServerError, "Failed to fetch peoples", err.Error())
 		return
 	}
 
@@ -203,6 +227,24 @@ func (h *Handler) PeopleList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// count total items
+	count, err := h.service.Count()
+	if err != nil {
+		response.JsonResponse(w, http.StatusInternalServerError, "Failed to count peoples", err.Error())
+		return
+	}
+
+	// process data
+	peopleData := PeopleResponse{
+		Data: peoples,
+		Pagination: Pagination{
+			Limit:       limit,
+			CurrentPage: page,
+			TotalItems:  count,
+			TotalPages:  count / limit,
+		},
+	}
+
 	// respond with peoples
-	response.JsonResponse(w, http.StatusOK, "Peoples fetched successfully", peoples)
+	response.JsonResponse(w, http.StatusOK, "Peoples fetched successfully", peopleData)
 }

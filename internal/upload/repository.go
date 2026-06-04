@@ -5,8 +5,9 @@ import (
 )
 
 type UploadRepository interface {
-	PeopleList() ([]*People, error)
+	PeopleList(page int, limit int) ([]*People, error)
 	CsvUpload(people *People) error
+	Count() (int, error)
 }
 
 type uploadRepo struct {
@@ -17,15 +18,27 @@ func NewUploadRepo(db *sqlx.DB) UploadRepository {
 	return &uploadRepo{db: db}
 }
 
-func (r *uploadRepo) PeopleList() ([]*People, error) {
+func (r *uploadRepo) PeopleList(page int, limit int) ([]*People, error) {
 	var peoples []*People
+	offset := (page - 1) * limit
 
-	err := r.db.Select(&peoples, "SELECT * FROM peoples limit 1000")
+	err := r.db.Select(&peoples, "SELECT * FROM peoples limit ? offset ?", limit, offset)
 	if err != nil {
 		return nil, err
 	}
 
 	return peoples, nil
+}
+
+func (r *uploadRepo) Count() (int, error) {
+	var total int
+
+	err := r.db.QueryRow("SELECT COUNT(*) FROM peoples").Scan(&total)
+	if err != nil {
+		return 0, err
+	}
+
+	return total, nil
 }
 
 func (r *uploadRepo) CsvUpload(people *People) error {

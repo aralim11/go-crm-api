@@ -9,8 +9,9 @@ import (
 )
 
 type UploadService interface {
-	PeopleList() ([]*People, error)
+	PeopleList(page int, limit int) ([]*People, error)
 	ProcessCSV(file string) error
+	Count() (int, error)
 }
 
 type uploadService struct {
@@ -21,13 +22,22 @@ func NewUploadService(repo UploadRepository) UploadService {
 	return &uploadService{repo: repo}
 }
 
-func (s *uploadService) PeopleList() ([]*People, error) {
-	peoples, err := s.repo.PeopleList()
+func (s *uploadService) PeopleList(page int, limit int) ([]*People, error) {
+	peoples, err := s.repo.PeopleList(page, limit)
 	if err != nil {
 		return nil, err
 	}
 
 	return peoples, nil
+}
+
+func (s *uploadService) Count() (int, error) {
+	count, err := s.repo.Count()
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }
 
 func (s *uploadService) ProcessCSV(dstPath string) error {
