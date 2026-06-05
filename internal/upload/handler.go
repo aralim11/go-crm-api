@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/aralim11/go-crm-api/internal/utils/response"
 	"github.com/aralim11/go-crm-api/internal/utils/validator"
@@ -185,6 +186,9 @@ func (h *Handler) CsvUpload(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) PeopleList(w http.ResponseWriter, r *http.Request) {
+	var countData int
+	var wg sync.WaitGroup
+
 	// check request method
 	if r.Method != http.MethodGet {
 		response.JsonResponse(w, http.StatusMethodNotAllowed, "Method not allowed", nil)
@@ -228,11 +232,21 @@ func (h *Handler) PeopleList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// count total items
-	count, err := h.service.Count()
-	if err != nil {
-		response.JsonResponse(w, http.StatusInternalServerError, "Failed to count peoples", err.Error())
-		return
-	}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		count, err := h.service.Count()
+		if err != nil {
+			response.JsonResponse(w, http.StatusInternalServerError, "Failed to count peoples", err.Error())
+			return
+		}
+
+		countData = count
+	}()
+
+	wg.Wait()
+
+	// time.Sleep(time.Second * 1)
 
 	// process data
 	peopleData := PeopleResponse{
@@ -240,8 +254,8 @@ func (h *Handler) PeopleList(w http.ResponseWriter, r *http.Request) {
 		Pagination: Pagination{
 			Limit:       limit,
 			CurrentPage: page,
-			TotalItems:  count,
-			TotalPages:  count / limit,
+			TotalItems:  countData,
+			TotalPages:  countData / limit,
 		},
 	}
 
