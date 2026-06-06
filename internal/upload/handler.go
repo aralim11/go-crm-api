@@ -183,6 +183,9 @@ func (h *Handler) CsvUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// return success and start working process
+	response.JsonResponse(w, http.StatusOK, "Upload done and Processing data", nil)
+
 }
 
 func (h *Handler) PeopleList(w http.ResponseWriter, r *http.Request) {

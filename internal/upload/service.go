@@ -3,7 +3,9 @@ package upload
 import (
 	"encoding/csv"
 	"io"
+	"log"
 	"os"
+	"sync"
 
 	"github.com/aralim11/go-crm-api/internal/utils/validator"
 )
@@ -51,6 +53,33 @@ func (s *uploadService) ProcessCSV(dstPath string) error {
 	// read csv from server
 	reader := csv.NewReader(csvFile)
 
+	// queue jobs worker
+	jobs := make(chan []People, 10)
+	var wg sync.WaitGroup
+	workerCount := 5
+	batchSize := 200
+
+	// start workers
+	for i := 1; i < workerCount; i++ {
+		wg.Add(1)
+
+		go func(id int) {
+			defer wg.Done()
+
+			for batchData := range jobs {
+				log.Printf("Worker %d processing batch size: %d\n", id, len(batchData))
+
+				err := s.repo.CsvUpload(batchData)
+				if err != nil {
+					log.Printf("Worker %d error: %v\n", id, err)
+				}
+
+				log.Printf("Worker %d success.\n", id)
+			}
+		}(i)
+	}
+
+	var batch []People
 	for {
 		record, err := reader.Read()
 		if err == io.EOF {
@@ -72,13 +101,20 @@ func (s *uploadService) ProcessCSV(dstPath string) error {
 			JobTitle:    record[7],
 		}
 
-		// fmt.Println(people)
+		batch = append(batch, people)
 
-		err = s.repo.CsvUpload(&people)
-		if err != nil {
-			return err
+		// when batch full → send to worker
+		if len(batch) == batchSize {
+			jobs <- batch
+			batch = nil // reset
 		}
 	}
 
+	if len(batch) > 0 {
+		jobs <- batch
+	}
+
+	close(jobs)
+	wg.Wait()
 	return nil
 }

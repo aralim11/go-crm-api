@@ -6,7 +6,7 @@ import (
 
 type UploadRepository interface {
 	PeopleList(page int, limit int) ([]*People, error)
-	CsvUpload(people *People) error
+	CsvUpload(people []People) error
 	Count() (int, error)
 }
 
@@ -41,10 +41,17 @@ func (r *uploadRepo) Count() (int, error) {
 	return total, nil
 }
 
-func (r *uploadRepo) CsvUpload(people *People) error {
-	_, err := r.db.Exec(
-		"INSERT INTO peoples (user_id, first_name, last_name, sex, email, phone, date_of_birth, job_title) VALUES(?, ?, ?, ?, ?, ?, ?, ?)",
-		people.UserID, people.FirstName, people.LastName, people.Sex, people.Email, people.Phone, people.DateOfBirth, people.JobTitle,
-	)
-	return err
+func (r *uploadRepo) CsvUpload(people []People) error {
+	for _, p := range people {
+		_, err := r.db.Exec(
+			"INSERT INTO peoples (user_id, first_name, last_name, sex, email, phone, date_of_birth, job_title) VALUES(?, ?, ?, ?, ?, ?, ?, ?)",
+			p.UserID, p.FirstName, p.LastName, p.Sex, p.Email, p.Phone, p.DateOfBirth, p.JobTitle,
+		)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
