@@ -20,7 +20,7 @@ func Serve() {
 	// DB connection
 	dbConn, err := db.NewConnection(cnf.Database)
 	if err != nil {
-		log.Fatal("Database Connection Error!!")
+		log.Fatal("Database Connection Error!!", err)
 	}
 
 	// DB migration

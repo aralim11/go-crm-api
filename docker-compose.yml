@@ -6,7 +6,7 @@ services:
     build: .
     container_name: go-app
     ports:
-      - "3000:8000"
+      - "3000:3000"
     env_file:
       - .env
     volumes:
@@ -14,20 +14,36 @@ services:
     restart: unless-stopped
     depends_on:
       - mysql
+    networks:
+      - go_crm_network
 
   mysql:
     image: mysql:8.0
     container_name: mysql
-    restart: unless-stopped
+    restart: always
     tty: true
     ports:
       - "3306:3306"
     volumes:
       - ./docker/mysql:/var/lib/mysql
     environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    networks:
+      - go_crm_network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    restart: always
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+    depends_on:
+      - mysql
     networks:
       - go_crm_network

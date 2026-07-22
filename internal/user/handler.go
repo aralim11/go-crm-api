@@ -19,6 +19,8 @@ func NewUserHandler(service UserService) *Handler {
 }
 
 func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
+	response.JsonResponse(w, http.StatusMethodNotAllowed, "Test Here!!!", nil)
+
 	// check method
 	if r.Method != http.MethodPost {
 		response.JsonResponse(w, http.StatusMethodNotAllowed, "Method not allowed!!", nil)

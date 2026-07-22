@@ -7,10 +7,16 @@ tmp_dir = "tmp"
 
 [build]
   args_bin = []
-  bin = "tmp\\main.exe"
-  cmd = "go build -o ./tmp/main.exe ./cmd/go-crm-api"
+  # ❌ OLD (Windows - commented)
+  # bin = "tmp\\main.exe"
+  # cmd = "go build -o ./tmp/main.exe ./cmd/go-crm-api"
+  # entrypoint = ["tmp\\main.exe"]
+
+  # ✅ NEW (Linux - correct)
+  bin = "tmp/main"
+  cmd = "go build -o ./tmp/main ./cmd/go-crm-api"
+  entrypoint = ["tmp/main"]
   delay = 1000
-  entrypoint = ["tmp\\main.exe"]
   exclude_dir = ["assets", "tmp", "vendor", "testdata"]
   exclude_file = []
   exclude_regex = ["_test.go"]
@@ -23,8 +29,8 @@ tmp_dir = "tmp"
   include_file = []
   kill_delay = "1s"
   log = "build-errors.log"
-  poll = false
-  poll_interval = 0
+  poll = true
+  poll_interval = 1000
   post_cmd = []
   pre_cmd = []
   rerun = false

@@ -5,13 +5,13 @@ WORKDIR /app
 RUN apk add --no-cache git
 
 COPY go.mod go.sum ./
-RUN go mod tidy
+RUN go mod download
 
 COPY . .
 
 # install air (optional for dev)
 RUN go install github.com/air-verse/air@latest
 
-EXPOSE 8000
+EXPOSE 3000
 
 CMD ["air"]
