@@ -4,7 +4,6 @@ networks:
 services:
   mysql:
     image: mysql:8.0
-    container_name: mysql
     restart: always
     tty: true
     ports:
@@ -25,14 +24,14 @@ services:
       retries: 10
 
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
     container_name: go-app
     ports:
       - "3000:3000"
     env_file:
       - .env
-    volumes:
-      - .:/app   # for development (auto reflect changes)
     restart: unless-stopped
     depends_on:
       mysql:
